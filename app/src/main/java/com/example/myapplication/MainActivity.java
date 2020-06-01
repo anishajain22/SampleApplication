@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button Savebtn,Clickbtn,WebMobbtn;
+    Button Savebtn,Clickbtn,WebMobbtn,TaskListBtn;
     EditText text;
     SharedPreferences sharedPreferences;
     @SuppressLint("WrongConstant")
@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         Clickbtn = (Button) findViewById(R.id.click);
         text = (EditText) findViewById(R.id.text);
         WebMobbtn=(Button) findViewById(R.id.webMobile);
+        TaskListBtn =(Button) findViewById(R.id.taskListBtn);
 
         sharedPreferences = getSharedPreferences("MyPref",MODE_APPEND);
         String str = sharedPreferences.getString("text","");
@@ -59,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View arg0) {
                 Intent intent = new Intent(MainActivity.this,
                         WebMobileView.class);
+                startActivity(intent);
+                //Save pref
+            }
+        });
+
+        TaskListBtn.setOnClickListener(new OnClickListener() {
+
+            public void onClick(View arg0) {
+                Intent intent = new Intent(MainActivity.this,
+                        TaskAcitivity.class);
                 startActivity(intent);
                 //Save pref
             }
