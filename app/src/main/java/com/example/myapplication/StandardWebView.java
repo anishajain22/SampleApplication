@@ -1,71 +1,112 @@
 package com.example.myapplication;
 
-import android.webkit.WebChromeClient;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.FileUtils;
+import android.renderscript.ScriptGroup;
+
+import android.util.Log;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.os.Bundle;
-import android.app.Activity;
-import android.view.Window;
 
-import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.Scanner;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 public class StandardWebView extends AppCompatActivity {
 
-    // Declare Variables
-    WebView webview;
-
+    WebView mTabHostView;
+    final String AppID = "myWebview";
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Prepare the progress bar
-        requestWindowFeature(Window.FEATURE_PROGRESS);
+        setContentView(R.layout.activity_main);
+        Log.d("Debug","Create");
+        mTabHostView = findViewById(R.id.webview);
+        mTabHostView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+        mTabHostView.setWebViewClient(new AndroidWebClient());
+        mTabHostView.getSettings().setAppCacheMaxSize(5 * 1024 * 1024); // 5MB
+        Log.d("Path", getApplicationContext().getCacheDir().getAbsolutePath());
 
-        // Get the view from webview.xml
-        setContentView(R.layout.webview);
 
-        // Locate the WebView in webview.xml
-        webview = (WebView) findViewById(R.id.webview);
-
-        webview.setWebViewClient(new WebViewClient());
-
-        // Enable Javascript to run in WebView
-        webview.getSettings().setJavaScriptEnabled(true);
-
-        //Enabling local cache for webview
-        webview.getSettings().setAppCacheEnabled(true);
-        webview.getSettings().setAppCachePath(StandardWebView.this.getCacheDir().getPath());
-
-        // Allow Zoom in/out controls
-        webview.getSettings().setBuiltInZoomControls(true);
-
-        // Zoom out the best fit your screen
-        webview.getSettings().setLoadWithOverviewMode(true);
-        webview.getSettings().setUseWideViewPort(true);
-
-        // Load URL
-        webview.loadUrl("https://www.google.com");
-
-        // Show the progress bar
-        webview.setWebChromeClient(new WebChromeClient() {
-            public void onProgressChanged(WebView view, int progress) {
-                setProgress(progress * 100);
-            }
-        });
-
-        // Call private class InsideWebViewClient
-        webview.setWebViewClient(new InsideWebViewClient());
-
+        if (!isNetworkAvailable()) { // loading offline
+            Log.d("Debug", "Offline");
+            mTabHostView.loadUrl("file:///"+getApplicationContext().getCacheDir().getAbsolutePath()
+                    + File.separator+hashAppID(AppID)+".mht");
+        } else {
+            Log.d("Debug", "Online");
+            mTabHostView.loadUrl("https://www.microsoft.com");
+        }
     }
 
-    private class InsideWebViewClient extends WebViewClient {
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
+    private class AndroidWebClient extends WebViewClient {
         @Override
-        // Force links to be opened inside WebView and not in Default Browser
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            view.loadUrl(url);
-            return true;
+        public void onPageStarted(WebView view, String url,
+                                  android.graphics.Bitmap favicon) {
+        }
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            view.saveWebArchive(getApplicationContext().getCacheDir().getAbsolutePath()
+                    + File.separator +hashAppID(AppID)+".mht");
+            // our webarchive wull be available now at the above provided location with name "myArchive"+".mht"
 
         }
+        public void onLoadResource(WebView view, String url) {
 
+        }
     }
+
+    public String hashAppID(String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i=0; i<messageDigest.length; i++)
+                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
 
 }
