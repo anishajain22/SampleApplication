@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -14,7 +15,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button Savebtn,Clickbtn,WebMobbtn,TaskListBtn;
+    Button Savebtn,Clickbtn,WebMobbtn,TaskListBtn,TabPagebtn;
     EditText text;
     SharedPreferences sharedPreferences;
     @SuppressLint("WrongConstant")
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         text = (EditText) findViewById(R.id.text);
         WebMobbtn=(Button) findViewById(R.id.webMobile);
         TaskListBtn =(Button) findViewById(R.id.taskListBtn);
+        TabPagebtn = (Button) findViewById(R.id.tabPage);
 
         sharedPreferences = getSharedPreferences("MyPref",MODE_APPEND);
         String str = sharedPreferences.getString("text","");
@@ -74,6 +76,16 @@ public class MainActivity extends AppCompatActivity {
                 //Save pref
             }
         });
+
+        TabPagebtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,TabDisplay.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 
 

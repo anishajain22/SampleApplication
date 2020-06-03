@@ -46,12 +46,11 @@ public class StandardWebView extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.webview);
+        mTabHostView =(WebView) findViewById(R.id.webview);
         Log.d("Debug","Create");
-        mTabHostView = findViewById(R.id.webview);
         mTabHostView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         mTabHostView.setWebViewClient(new AndroidWebClient());
-        mTabHostView.getSettings().setAppCacheMaxSize(5 * 1024 * 1024); // 5MB
         Log.d("Path", getApplicationContext().getCacheDir().getAbsolutePath());
 
 
